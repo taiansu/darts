@@ -19,11 +19,19 @@ defmodule Darts.CDF do
       * default: __default: nil__
       * rate_key: __default: :rate__
 
-  ## Examples from a list of map
+  ## Example: build from a list of map
+      iex> cdf = Darts.CDF.new([%{id: 1, rate: "0.4"}, %{id: 2, rate: "0.3"}, %{id: 3, rate: "0.1"}])
+      %Darts.CDF{
+        opts: [rate_key: :rate, percision: 4],
+        pool: [%{id: 1, rate: "0.4"}, %{id: 2, rate: "0.3"}, %{id: 3, rate: "0.1"}]
+      }
 
-      # iex> pool = [%{id: 1, rate: "0.4"}, %{id: 1, rate: "0.3"}, %{id: 1, rate: "0.1"}, %{id: 4, rate: "0.2"}]
-      # iex> Darts.CDF.new(input)
-      # %Darts.CDF{pool: input, percision: 4, rate_key: :rate}
+  ## Example: build from a keyword list
+      iex> cdf = Darts.CDF.new([{1, "0.2"}, {2, "0.3"}, {3, "0.1"}, {4, "0.4"}])
+      %Darts.CDF{
+        opts: [rate_key: :rate, percision: 4],
+        pool: [{1, "0.2"}, {2, "0.3"}, {3, "0.1"}, {4, "0.4"}]
+      }
 
   """
   def new(pool, opts \\ []) do
@@ -40,7 +48,8 @@ defmodule Darts.CDF do
   #Example
       iex> pool = [%{id: 1, rate: "0.4"}, %{id: 2, rate: "0.3"}, %{id: 3, rate: "0.1"}]
       iex> cdf = Darts.CDF.new(pool)
-      iex> Darts.CDF.draw(cdf) in [ nil | pool]
+      iex> result = Darts.CDF.draw(cdf)
+      iex> result in [nil | pool]
       true
   """
   def draw(%__MODULE__{pool: pool, opts: opts}) do
@@ -68,15 +77,10 @@ defmodule Darts.CDF do
   Get the total rate of the data pool.
   Time complexity: O(n)
 
-  ## Example from list of map
-      iex> cdf = Darts.CDF.new([%{id: 1, rate: "0.4"}, %{id: 2, rate: "0.3"}, %{id: 3, rate: "0.1"}])
+  ## Example:
+      iex> cdf = Darts.CDF.new([{1, "0.2"}, {2, "0.3"}, {3, "0.1"}])
       iex> Darts.CDF.total_rate(cdf)
-      #Decimal<0.8>
-
-  ## Example from keyword
-      iex> cdf = Darts.CDF.new([{1, "0.2"}, {2, "0.3"}, {3, "0.1"}, {4, "0.4"}])
-      iex> Darts.CDF.total_rate(cdf)
-      #Decimal<1.0>
+      #Decimal<0.6>
   """
   def total_rate(%__MODULE__{pool: pool, opts: opts}) do
     Enum.reduce(pool, 0, fn item, accu ->
